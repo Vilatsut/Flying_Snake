@@ -10,15 +10,23 @@ KF_ACCELBIAS_VARIANCE = 0.005
 KF_ZMEAS_VARIANCE_DEFAULT = 200 # 0.00255189
 KF_ACCEL_VARIANCE_DEFAULT = 100
 
+class State:
+    def __init__(self, z=0, v=0, a=0, b=0):
+        self.z = z
+        self.v = v
+        self.a = a
+        self.b = b
+
 class KalmanFilter:
     def __init__(self, initialAlt, initialVel, initialAccl):
+        self.UseAdaptiveVariance = True
+
         self.zSensorVariance = KF_ZMEAS_VARIANCE_DEFAULT
         self.AUpdateVariance = KF_ACCEL_UPDATE_VARIANCE*1000
         self.AccelVariance = KF_ACCEL_VARIANCE_DEFAULT*1000
         self.BiasVariance = KF_ACCELBIAS_VARIANCE
 
-        States = namedtuple("States", ["z", "v", "a", "b"])
-        self.State = States(initialAlt, initialVel, initialAccl, 0.0)
+        self.State = State(initialAlt, initialVel, initialAccl, 0.0)
 
         self.Pzz = 1000
         self.Pzv = 0.0
@@ -45,7 +53,7 @@ class KalmanFilter:
 #  | 0   1   dt     -dt     |
 #  | 0   0   1       0      |
 #  | 0   0   0       1      |
-    def predict(dt):
+    def predict(self, dt):
         # Predicted (a priori) state vector estimate x_k- = F * x_k-1+
         accel_true = self.State.a - self.State.b # true acceleration = acceleration minus acceleration sensor bias
         self.State.z = self.State.z + (self.State.v * dt) + (accel_true * dt * dt* 0.5)
@@ -123,7 +131,7 @@ class KalmanFilter:
         s11 = self.Paa
 
         # add R_k
-        s00 = s00 + self.ZSensorVariance
+        s00 = s00 + self.zSensorVariance
         if self.UseAdaptiveVariance:
             accel_ext = (am-self.State.b)*(am-self.State.b)
             # allows filter  to respond quickly to moderate/large accelerations while heavily filtering out noise
@@ -199,5 +207,5 @@ class KalmanFilter:
         self.Pbb = p33
 
         # return the state variables of interest (z and v)
-        return (State.z, State.v)
+        return (self.State.z, self.State.v)
 

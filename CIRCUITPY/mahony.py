@@ -313,4 +313,4 @@ class Mahony:
     @sample_freq.setter
     def sample_freq(self, value):
         self._sample_freq = value
-        self.invSampleFreq = 1.0 / self.sample_freq# Write your code here :-)
+        self.invSampleFreq = 1.0 / self.sample_freq

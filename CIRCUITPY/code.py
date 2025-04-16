@@ -1,2 +1,3 @@
 import flying_snake
-flying_snake.main()
+import kalman_filter_test
+kalman_filter_test.main()
